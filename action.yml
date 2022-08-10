@@ -1,0 +1,47 @@
+name: 'Upload to ShotGrid'
+author: 'Fabian Geisler'
+description: 'Upload an artifact to a ShotGrid entity field.'
+
+branding:
+  icon: upload-cloud
+  color: blue
+
+inputs:
+  upload_file:
+    description: 'Path to the file you want to upload. Glob patterns are supported, but
+                  only the first found file will be uploaded.'
+    required: true
+  shotgrid_base_url:
+    description: 'The URL of the ShotGrid site you use as a cpenv repo. Store as a github secret.'
+    required: true
+  shotgrid_script_name:
+    description: 'Name of ShotGrid api script. Store as a github secret.'
+    required: true
+  shotgrid_api_key:
+    description: 'ShotGrid api script key. Store as github secret.'
+    required: true
+  entity_type:
+    description: 'Name of ShotGrid entity like, "PipelineConfiguration".'
+    required: true
+  entity_id:
+    description: 'ID of ShotGrid entity.'
+    required: true
+  entity_field:
+    description: 'The field of ShotGrid entity to upload to. (eg."uploaded_config")'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: "actions/setup-python@v2"
+      with:
+        python-version: "3.7"
+    - name: "Install dependencies"
+      run: python3 -m pip install -r requirements.txt
+    - name: Upload file to ShotGrid
+      run: sg_uploader.py --entity_type="${{ inputs.entity_type }}" --entity_id="${{ inputs.entity_id }}" --entity_field="${{ inputs.entity_field }}"  -i="${{ inputs.upload_file }}"
+      shell: python
+      env:
+        SHOTGRID_SITE: "${{ inputs.shotgrid_base_url }}"
+        SHOTGRID_SCRIPT_USER: "${{ inputs.shotgrid_script_name }}"
+        SHOTGRID_APPLICATION_KEY: "${{ inputs.shotgrid_api_key }}"
