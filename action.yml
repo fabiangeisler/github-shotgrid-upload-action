@@ -39,7 +39,7 @@ runs:
       # We skip this action here and setup our dependencies manually.
       run: | 
         python3 -m pip download -r requirements.txt 
-        unzip shotgun-api3-*.zip 
+        unzip -q shotgun-api3-*.zip 
         echo "PYTHONPATH=`pwd`/shotgun-api3" >> $GITHUB_ENV
       shell: bash
     - name: Upload file to ShotGrid
