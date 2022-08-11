@@ -26,7 +26,7 @@ inputs:
   entity_id:
     description: 'ID of ShotGrid entity.'
     required: true
-  entity_field:
+  field_name:
     description: 'The field of ShotGrid entity to upload to. (eg."uploaded_config")'
     required: true
 
@@ -40,7 +40,7 @@ runs:
       run: python3 -m pip install -r requirements.txt
       shell: bash
     - name: Upload file to ShotGrid
-      run: sg_uploader.py --entity_type="${{ inputs.entity_type }}" --entity_id="${{ inputs.entity_id }}" --entity_field="${{ inputs.entity_field }}"  -i="${{ inputs.upload_file }}"
+      run: sg_uploader.py --entity_type="${{ inputs.entity_type }}" --entity_id="${{ inputs.entity_id }}" --field_name="${{ inputs.field_name }}" -i="${{ inputs.upload_file }}"
       shell: python
       env:
         SHOTGRID_SITE: "${{ inputs.shotgrid_base_url }}"

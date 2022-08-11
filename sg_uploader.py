@@ -24,7 +24,7 @@ def main(cli_args=None):
                         help='The ID of the entity to upload to.')
     parser.add_argument('-type', '--entity_type', required=True,
                         help='The ShotGrid type of the entity.')
-    parser.add_argument('-field', '--entity_field', required=True,
+    parser.add_argument('-field', '--field_name', required=True,
                         help='The name of the entity field to upload to.')
 
     args = parser.parse_args(cli_args)
@@ -40,11 +40,11 @@ def main(cli_args=None):
     print('Upload file "{}" to {} (id: {}) {}.'.format(upload_file_path,
                                                        args.entity_type,
                                                        args.entity_id,
-                                                       args.entity_field))
+                                                       args.field_name))
     attachment_id = sg.upload(entity_type=args.entity_type,
                               entity_id=args.entity_id,
                               path=upload_file_path,
-                              field_name=args.entity_field)
+                              field_name=args.field_name)
 
     print('Upload successful. Created attachment with ID {}'.format(attachment_id))
 
