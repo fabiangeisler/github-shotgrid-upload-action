@@ -34,11 +34,12 @@ runs:
   using: 'composite'
   steps:
     - name: "Install dependencies"
+      working-directory: ${{ github.action_path }}
       # Note: setup-python GitHub action can be tricky to setup on self hosted runners.
       # We skip this action here and setup our dependencies manually.
       run: | 
-        python3 -m pip download -r ${{ github.action_path }}/requirements.txt
-        unzip shotgun-api3-*.zip
+        python3 -m pip download -r requirements.txt 
+        unzip shotgun-api3-*.zip 
         echo "PYTHONPATH=`pwd`/shotgun-api3" >> $GITHUB_ENV
       shell: bash
     - name: Upload file to ShotGrid
@@ -48,3 +49,10 @@ runs:
         SHOTGRID_SITE: "${{ inputs.shotgrid_base_url }}"
         SHOTGRID_SCRIPT_USER: "${{ inputs.shotgrid_script_name }}"
         SHOTGRID_APPLICATION_KEY: "${{ inputs.shotgrid_api_key }}"
+    - name: Cleanup resources
+      working-directory: ${{ github.action_path }}
+      if: always()
+      run: |
+        rm shotgun-api3-*.zip
+        rm -rf shotgun-api3
+      shell: bash
