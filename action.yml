@@ -33,11 +33,13 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: "actions/setup-python@v2"
-      with:
-        python-version: "3.7"
     - name: "Install dependencies"
-      run: python3 -m pip install -r requirements.txt
+      # Note: setup-python GitHub action can be tricky to setup on self hosted runners.
+      # We skip this action here and setup our dependencies manually.
+      run: | 
+        python3 -m pip download -r requirements.txt
+        unzip shotgun-api3-*.zip
+        echo "PYTHONPATH=`pwd`/shotgun-api3" >> $GITHUB_ENV
       shell: bash
     - name: Upload file to ShotGrid
       run: sg_uploader.py --entity_type="${{ inputs.entity_type }}" --entity_id="${{ inputs.entity_id }}" --field_name="${{ inputs.field_name }}" -i="${{ inputs.upload_file }}"
