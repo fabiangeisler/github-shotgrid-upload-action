@@ -1,47 +1,18 @@
 """
-Upload files to ShotGrid.
+Upload a file to a ShotGrid entity.
 """
 import argparse
 import glob
 import os
 
-from shotgun_api3 import Shotgun, ShotgunError
+from shotgun_api3 import Shotgun
 
 
-def sg_upload_with_retry(sg, entity_type, entity_id, path, field_name=None,
-                         display_name=None, tag_list=None, retries=1):
+def main(cli_args=None):
     """
-    :param shotgun_api3.shotgun.Shotgun sg: A shotgun API instance.
-    :param str entity_type: Entity type to link the upload to.
-    :param int entity_id: Id of the entity to link the upload to.
-    :param str path: Full path to an existing non-empty file on disk to upload.
-    :param str field_name: The ShotGrid field name on the entity to store the file in.
-        This field must be a File/Link field type.
-    :param str display_name: The display name to use for the file. Defaults to the file name.
-    :param str tag_list: comma-separated string of tags to assign to the file.
-    :param int retries: How often to retry to upload. Can be between 0 and 3.
-    :returns: ID of the Attachment entity that was created for the image.
-    :rtype: int
-    :raises ShotgunError: When an error occurred during upload after
-                          the maximum retries have been reached.
-    """
-    retries = max(0, min(retries, 3))
-    retry = 0
-    while True:
-        retry += 1
-        try:
-            return sg.upload(entity_type=entity_type, entity_id=entity_id, path=path,
-                             field_name=field_name, display_name=display_name, tag_list=tag_list)
-        except ShotgunError:
-            if retry > retries:
-                raise
+    Upload a file to a ShotGrid entity field based on the given cli arguments.
 
-
-def cli(args=None):
-    """
-    Command line interface.
-
-    :param list[str]|None args: The list of command line arguments.
+    :param list[str]|None cli_args: The list of command line arguments.
     """
     parser = argparse.ArgumentParser()
 
@@ -56,22 +27,27 @@ def cli(args=None):
     parser.add_argument('-field', '--entity_field', required=True,
                         help='The name of the entity field to upload to.')
 
-    args = parser.parse_args(args)
-
-    shotgun = Shotgun(base_url=os.environ['SHOTGRID_SITE'],
-                      script_name=os.environ['SHOTGRID_SCRIPT_USER'],
-                      api_key=os.environ['SHOTGRID_APPLICATION_KEY'])
+    args = parser.parse_args(cli_args)
 
     upload_file_path = args.input
     if any((glob_chr in upload_file_path for glob_chr in ['*', '?', '[', ']'])):
         upload_file_path = sorted(glob.glob(upload_file_path))[0]
 
-    sg_upload_with_retry(sg=shotgun,
-                         entity_type=args.entity_type,
-                         entity_id=args.entity_id,
-                         path=upload_file_path,
-                         field_name=args.entity_field)
+    sg = Shotgun(base_url=os.environ['SHOTGRID_SITE'],
+                 script_name=os.environ['SHOTGRID_SCRIPT_USER'],
+                 api_key=os.environ['SHOTGRID_APPLICATION_KEY'])
+
+    print('Upload file "{}" to {} (id: {}) {}.'.format(upload_file_path,
+                                                       args.entity_type,
+                                                       args.entity_id,
+                                                       args.entity_field))
+    attachment_id = sg.upload(entity_type=args.entity_type,
+                              entity_id=args.entity_id,
+                              path=upload_file_path,
+                              field_name=args.entity_field)
+
+    print('Upload successful. Created attachment with ID {}'.format(attachment_id))
 
 
 if __name__ == '__main__':
-    cli()
+    main()

@@ -9,6 +9,8 @@ There might be other use cases for it. Let me know if you find one :).
 Here is an example how to use the GitHub action.
 
 ```yaml
+# When a release on GitHub is created we upload the repository zip file to a
+# Pipeline configuration entity in ShotGrid.
 name: Publish to ShotGrid
 
 on:
@@ -28,7 +30,7 @@ jobs:
           token: "${{ github.token }}"
 
       - name: Upload to ShotGrid
-        uses: fabiangeisler/github-shotgrid-upload-action@main
+        uses: fabiangeisler/github-shotgrid-upload-action@v1
         with:
           upload_file: REPOSITORY-NAME-*.zip
           entity_type: PipelineConfiguration
