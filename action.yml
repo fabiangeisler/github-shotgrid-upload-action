@@ -33,6 +33,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - uses: actions/checkout@v2
     - name: "Install dependencies"
       # Note: setup-python GitHub action can be tricky to setup on self hosted runners.
       # We skip this action here and setup our dependencies manually.
