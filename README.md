@@ -33,6 +33,7 @@ jobs:
         uses: fabiangeisler/github-shotgrid-upload-action@v1
         with:
           upload_file: REPOSITORY-NAME-*.zip
+          delete_file_after_upload: true
           entity_type: PipelineConfiguration
           entity_id: 1
           field_name: uploaded_config

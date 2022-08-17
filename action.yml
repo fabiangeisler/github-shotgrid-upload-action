@@ -11,6 +11,10 @@ inputs:
     description: 'Path to the file you want to upload. Glob patterns are supported, but
                   only the first found file will be uploaded.'
     required: true
+  delete_file_after_upload:
+    description: 'Whether the uploaded file should be removed from disk after upload.'
+    required: false
+    default: '0'
   shotgrid_base_url:
     description: 'The URL of the ShotGrid site you use as a cpenv repo. Store as a github secret.'
     required: true
@@ -35,7 +39,7 @@ runs:
   steps:
     - name: "Install dependencies"
       working-directory: ${{ github.action_path }}
-      # Note: setup-python GitHub action can be tricky to setup on self hosted runners.
+      # Note: The "setup-python" GitHub action can be tricky to setup on self hosted runners.
       # We skip this action here and setup our dependencies manually.
       run: | 
         python3 -m pip download -r requirements.txt 
@@ -43,7 +47,7 @@ runs:
         echo "PYTHONPATH=`pwd`/shotgun-api3" >> $GITHUB_ENV
       shell: bash
     - name: Upload file to ShotGrid
-      run: python "${{ github.action_path }}/sg_uploader.py" -type "${{ inputs.entity_type }}" -id ${{ inputs.entity_id }} -field "${{ inputs.field_name }}" -i "${{ inputs.upload_file }}"
+      run: python "${{ github.action_path }}/sg_uploader.py" -type "${{ inputs.entity_type }}" -id ${{ inputs.entity_id }} -field "${{ inputs.field_name }}" -i "${{ inputs.upload_file }}"{{ fromJson(inputs.delete_file_after_upload) && ' --delete_file_after_upload' || '' }}
       shell: bash
       env:
         SHOTGRID_SITE: "${{ inputs.shotgrid_base_url }}"
