@@ -47,7 +47,7 @@ runs:
         echo "PYTHONPATH=`pwd`/shotgun-api3" >> $GITHUB_ENV
       shell: bash
     - name: Upload file to ShotGrid
-      run: python "${{ github.action_path }}/sg_uploader.py" -type "${{ inputs.entity_type }}" -id ${{ inputs.entity_id }} -field "${{ inputs.field_name }}" -i "${{ inputs.upload_file }}"${{ fromJson(inputs.delete_file_after_upload) && '' || ' --delete_file_after_upload' }}
+      run: python "${{ github.action_path }}/sg_uploader.py" -type "${{ inputs.entity_type }}" -id ${{ inputs.entity_id }} -field "${{ inputs.field_name }}" -i "${{ inputs.upload_file }}"${{ !fromJson(inputs.delete_file_after_upload) && ' --delete_file_after_upload' || '' }}
       shell: bash
       env:
         SHOTGRID_SITE: "${{ inputs.shotgrid_base_url }}"
