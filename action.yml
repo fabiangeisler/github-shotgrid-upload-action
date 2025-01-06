@@ -43,8 +43,8 @@ runs:
       # We skip this action here and setup our dependencies manually.
       run: | 
         python3 -m pip download -r requirements.txt 
-        unzip -q shotgun-api3-*.zip 
-        echo "PYTHONPATH=`pwd`/shotgun-api3" >> $GITHUB_ENV
+        unzip -q shotgun_api3-*.zip 
+        echo "PYTHONPATH=`pwd`/shotgun_api3" >> $GITHUB_ENV
       shell: bash
     - name: Upload file to ShotGrid
       run: python "${{ github.action_path }}/sg_uploader.py" -type "${{ inputs.entity_type }}" -id ${{ inputs.entity_id }} -field "${{ inputs.field_name }}" -i "${{ inputs.upload_file }}"${{ fromJson(inputs.delete_file_after_upload) && ' --delete_file_after_upload' || '' }}
@@ -57,6 +57,6 @@ runs:
       working-directory: ${{ github.action_path }}
       if: always()
       run: |
-        rm shotgun-api3-*.zip
-        rm -rf shotgun-api3
+        rm shotgun_api3-*.zip
+        rm -rf shotgun_api3
       shell: bash
