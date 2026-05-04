@@ -7,6 +7,11 @@ branding:
   color: blue
 
 inputs:
+  mode:
+    description: 'The mode of operation. "upload" uploads a file to an existing entity.
+                  "create new" creates a new entity and uploads a file to it.'
+    required: false
+    default: upload
   upload_file:
     description: 'Path to the file you want to upload. Glob patterns are supported, but
                   only the first found file will be uploaded.'
@@ -28,11 +33,15 @@ inputs:
     description: 'Name of ShotGrid entity like, "PipelineConfiguration".'
     required: true
   entity_id:
-    description: 'ID of ShotGrid entity.'
-    required: true
+    description: 'ID of ShotGrid entity. Required when mode is "upload".'
+    required: false
   field_name:
     description: 'The field of ShotGrid entity to upload to. (eg."uploaded_config")'
     required: true
+  fields:
+    description: 'YAML formatted field values to set on the new entity. Only used when mode
+                  is "create new". Example: "code: My Bundle\nversion: v1.0.0"'
+    required: false
 
 runs:
   using: 'composite'
@@ -51,13 +60,30 @@ runs:
       working-directory: ${{ github.action_path }}
       run: |
         source venv/bin/activate
-        python "${{ github.action_path }}/sg_uploader.py" -type "${{ inputs.entity_type }}" -id ${{ inputs.entity_id }} -field "${{ inputs.field_name }}" -i "${{ inputs.upload_file }}"${{ fromJson(inputs.delete_file_after_upload) && ' --delete_file_after_upload' || '' }}
+
+        ARGS=(-type "${{ inputs.entity_type }}" -field "${{ inputs.field_name }}" -i "${{ inputs.upload_file }}")
+
+        if [ "${{ inputs.mode }}" = "create new" ]; then
+          ARGS+=(--mode "create new")
+          if [ -n "$INPUT_FIELDS" ]; then
+            ARGS+=(--fields "$INPUT_FIELDS")
+          fi
+        else
+          ARGS+=(-id "${{ inputs.entity_id }}")
+        fi
+
+        if [ "${{ inputs.delete_file_after_upload }}" = "true" ]; then
+          ARGS+=(--delete_file_after_upload)
+        fi
+
+        python "${{ github.action_path }}/sg_uploader.py" "${ARGS[@]}"
         deactivate
       shell: bash
       env:
         SHOTGRID_SITE: "${{ inputs.shotgrid_base_url }}"
         SHOTGRID_SCRIPT_USER: "${{ inputs.shotgrid_script_name }}"
         SHOTGRID_APPLICATION_KEY: "${{ inputs.shotgrid_api_key }}"
+        INPUT_FIELDS: "${{ inputs.fields }}"
     - name: Cleanup resources
       working-directory: ${{ github.action_path }}
       if: always()
