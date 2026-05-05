@@ -8,10 +8,10 @@ branding:
 
 inputs:
   mode:
-    description: 'The mode of operation. "upload" uploads a file to an existing entity.
+    description: 'The mode of operation. "update existing" uploads a file to an existing entity.
                   "create new" creates a new entity and uploads a file to it.'
     required: false
-    default: upload
+    default: update existing
   upload_file:
     description: 'Path to the file you want to upload. Glob patterns are supported, but
                   only the first found file will be uploaded.'
@@ -33,7 +33,7 @@ inputs:
     description: 'Name of ShotGrid entity like, "PipelineConfiguration".'
     required: true
   entity_id:
-    description: 'ID of ShotGrid entity. Required when mode is "upload".'
+    description: 'ID of ShotGrid entity. Required when mode is "update existing".'
     required: false
   field_name:
     description: 'The field of ShotGrid entity to upload to. (eg."uploaded_config")'

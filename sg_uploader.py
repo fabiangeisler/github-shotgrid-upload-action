@@ -17,15 +17,17 @@ def main(cli_args=None):
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-m', '--mode', default='upload', choices=['upload', 'create new'],
-                        help='The mode of operation. "upload" uploads a file to an existing '
-                             'entity. "create new" creates a new entity and uploads a file to it.')
+    parser.add_argument('-m', '--mode', default='update existing',
+                        choices=['update existing', 'create new'],
+                        help='The mode of operation. "update existing" uploads a file to an '
+                             'existing entity. "create new" creates a new entity and uploads a '
+                             'file to it.')
     parser.add_argument('-i', '--input', required=True,
                         help='The file to upload. Glob patterns are supported '
                              'but only the first matching file will be uploaded.')
     # noinspection PyTypeChecker
     parser.add_argument('-id', '--entity_id', type=int, required=False, default=None,
-                        help='The ID of the entity to upload to. Required for "upload" mode.')
+                        help='The ID of the entity to upload to. Required for "update existing" mode.')
     parser.add_argument('-type', '--entity_type', required=True,
                         help='The ShotGrid type of the entity.')
     parser.add_argument('-field', '--field_name', required=True,
@@ -38,8 +40,8 @@ def main(cli_args=None):
 
     args = parser.parse_args(cli_args)
 
-    if args.mode == 'upload' and args.entity_id is None:
-        parser.error('--entity_id is required for "upload" mode.')
+    if args.mode == 'update existing' and args.entity_id is None:
+        parser.error('--entity_id is required for "update existing" mode.')
 
     upload_file_path = args.input
     if any((glob_chr in upload_file_path for glob_chr in ['*', '?', '[', ']'])):

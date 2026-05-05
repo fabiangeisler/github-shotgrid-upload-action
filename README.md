@@ -7,7 +7,7 @@ There might be other use cases for it. Let me know if you find one :).
 
 # Usage
 
-## Upload to an existing entity
+## Update an existing entity
 
 Here is an example how to upload a file to an existing ShotGrid entity.
 
