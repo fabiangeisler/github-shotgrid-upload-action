@@ -1,1 +1,2 @@
 git+https://github.com/shotgunsoftware/python-api.git@v3.3.4
+pyyaml>=6.0,<7.0

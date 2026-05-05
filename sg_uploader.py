@@ -5,6 +5,7 @@ import argparse
 import glob
 import os
 
+import yaml
 from shotgun_api3 import Shotgun
 
 
@@ -16,20 +17,33 @@ def main(cli_args=None):
     """
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('-m', '--mode', default='update existing',
+                        choices=['update existing', 'create new'],
+                        help='The mode of operation. "update existing" uploads a file to an '
+                             'existing entity. "create new" creates a new entity and uploads a '
+                             'file to it.')
     parser.add_argument('-i', '--input', required=True,
                         help='The file to upload. Glob patterns are supported '
                              'but only the first matching file will be uploaded.')
     # noinspection PyTypeChecker
-    parser.add_argument('-id', '--entity_id', type=int, required=True,
-                        help='The ID of the entity to upload to.')
+    parser.add_argument('-id', '--entity_id', type=int, required=False, default=None,
+                        help='The ID of the entity to upload to. Required for "update existing" mode.')
     parser.add_argument('-type', '--entity_type', required=True,
                         help='The ShotGrid type of the entity.')
     parser.add_argument('-field', '--field_name', required=True,
                         help='The name of the entity field to upload to.')
     parser.add_argument('-d', '--delete_file_after_upload', action='store_true', default=False,
                         help='Whether the uploaded file should be removed from disk after upload.')
+    parser.add_argument('-f', '--fields', required=False, default=None,
+                        help='YAML formatted string of field values to set on the entity. '
+                             'In "create new" mode these are set on creation. '
+                             'In "update existing" mode these are applied via an update call '
+                             'before uploading.')
 
     args = parser.parse_args(cli_args)
+
+    if args.mode == 'update existing' and args.entity_id is None:
+        parser.error('--entity_id is required for "update existing" mode.')
 
     upload_file_path = args.input
     if any((glob_chr in upload_file_path for glob_chr in ['*', '?', '[', ']'])):
@@ -39,12 +53,30 @@ def main(cli_args=None):
                  script_name=os.environ['SHOTGRID_SCRIPT_USER'],
                  api_key=os.environ['SHOTGRID_APPLICATION_KEY'])
 
+    fields = {}
+    if args.fields:
+        try:
+            fields = yaml.safe_load(args.fields) or {}
+        except yaml.YAMLError as exc:
+            parser.error('Failed to parse --fields as YAML: {}'.format(exc))
+
+    if args.mode == 'create new':
+        print('Create new {} entity with fields: {}'.format(args.entity_type, fields))
+        entity = sg.create(entity_type=args.entity_type, data=fields)
+        entity_id = entity['id']
+        print('Created new {} entity with ID {}'.format(args.entity_type, entity_id))
+    else:
+        entity_id = args.entity_id
+        if fields:
+            print('Update {} (id: {}) with fields: {}'.format(args.entity_type, entity_id, fields))
+            sg.update(entity_type=args.entity_type, entity_id=entity_id, data=fields)
+
     print('Upload file "{}" to {} (id: {}) {}.'.format(upload_file_path,
                                                        args.entity_type,
-                                                       args.entity_id,
+                                                       entity_id,
                                                        args.field_name))
     attachment_id = sg.upload(entity_type=args.entity_type,
-                              entity_id=args.entity_id,
+                              entity_id=entity_id,
                               path=upload_file_path,
                               field_name=args.field_name)
 
