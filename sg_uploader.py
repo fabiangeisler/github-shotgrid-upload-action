@@ -35,8 +35,10 @@ def main(cli_args=None):
     parser.add_argument('-d', '--delete_file_after_upload', action='store_true', default=False,
                         help='Whether the uploaded file should be removed from disk after upload.')
     parser.add_argument('-f', '--fields', required=False, default=None,
-                        help='YAML formatted string of field values to set when creating a new '
-                             'entity. Only used in "create new" mode.')
+                        help='YAML formatted string of field values to set on the entity. '
+                             'In "create new" mode these are set on creation. '
+                             'In "update existing" mode these are applied via an update call '
+                             'before uploading.')
 
     args = parser.parse_args(cli_args)
 
@@ -51,19 +53,23 @@ def main(cli_args=None):
                  script_name=os.environ['SHOTGRID_SCRIPT_USER'],
                  api_key=os.environ['SHOTGRID_APPLICATION_KEY'])
 
+    fields = {}
+    if args.fields:
+        try:
+            fields = yaml.safe_load(args.fields) or {}
+        except yaml.YAMLError as exc:
+            parser.error('Failed to parse --fields as YAML: {}'.format(exc))
+
     if args.mode == 'create new':
-        fields = {}
-        if args.fields:
-            try:
-                fields = yaml.safe_load(args.fields) or {}
-            except yaml.YAMLError as exc:
-                parser.error('Failed to parse --fields as YAML: {}'.format(exc))
         print('Create new {} entity with fields: {}'.format(args.entity_type, fields))
         entity = sg.create(entity_type=args.entity_type, data=fields)
         entity_id = entity['id']
         print('Created new {} entity with ID {}'.format(args.entity_type, entity_id))
     else:
         entity_id = args.entity_id
+        if fields:
+            print('Update {} (id: {}) with fields: {}'.format(args.entity_type, entity_id, fields))
+            sg.update(entity_type=args.entity_type, entity_id=entity_id, data=fields)
 
     print('Upload file "{}" to {} (id: {}) {}.'.format(upload_file_path,
                                                        args.entity_type,

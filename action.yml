@@ -39,8 +39,9 @@ inputs:
     description: 'The field of ShotGrid entity to upload to. (eg."uploaded_config")'
     required: true
   fields:
-    description: 'YAML formatted field values to set on the new entity. Only used when mode
-                  is "create new". Example: "code: My Bundle\nversion: v1.0.0"'
+    description: 'YAML formatted field values to set on the entity. In "create new" mode these
+                  are set on creation. In "update existing" mode these are applied via an update
+                  call before uploading. Example: "code: My Bundle\nversion: v1.0.0"'
     required: false
 
 runs:
@@ -65,11 +66,12 @@ runs:
 
         if [ "${{ inputs.mode }}" = "create new" ]; then
           ARGS+=(--mode "create new")
-          if [ -n "$INPUT_FIELDS" ]; then
-            ARGS+=(--fields "$INPUT_FIELDS")
-          fi
         else
           ARGS+=(-id "${{ inputs.entity_id }}")
+        fi
+
+        if [ -n "$INPUT_FIELDS" ]; then
+          ARGS+=(--fields "$INPUT_FIELDS")
         fi
 
         if [ "${{ inputs.delete_file_after_upload }}" = "true" ]; then

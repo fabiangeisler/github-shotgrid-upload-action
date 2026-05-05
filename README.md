@@ -9,7 +9,8 @@ There might be other use cases for it. Let me know if you find one :).
 
 ## Update an existing entity
 
-Here is an example how to upload a file to an existing ShotGrid entity.
+Here is an example how to upload a file to an existing ShotGrid entity. You can optionally
+provide `fields` to update additional fields on the entity at the same time.
 
 ```yaml
 # When a release on GitHub is created we upload the repository zip file to a
@@ -40,6 +41,8 @@ jobs:
           entity_type: PipelineConfiguration
           entity_id: 1
           field_name: uploaded_config
+          fields: |
+            sg_status_list: ip
           shotgrid_base_url: ${{ secrets.SHOTGRID_BASE_URL }}
           shotgrid_script_name: ${{ secrets.SHOTGRID_SCRIPT_NAME }}
           shotgrid_api_key: ${{ secrets.SHOTGRID_API_KEY }}
